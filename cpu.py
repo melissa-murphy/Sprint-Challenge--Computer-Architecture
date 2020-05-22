@@ -196,14 +196,23 @@ class CPU:
         print(self.reg[operand_a])
         return (2, True)
 
-    def mul(self, operand_a, operand_b):
-        pass
+    def mul(self, operand_a, operand_b): # multiply values from both registers and store in first register
+        self.alu("MUL", operand_a, operand_b)
+        return (3, True)
 
     def pop(self, operand_a, operand_b):
-        pass
+        value = self.ram_read(self.SP) # read starting point from stack pointer variable
+        self.reg[operand_a] = value # write to indicated register
+        self.SP += 1 # increment stack pointer to next occupied memory in the stack
+        
+        return (2, True)
 
     def push(self, operand_a, operand_b):
-        pass
+        self.SP -= 1 # decrement stack point and return open spot in memory
+        value = self.reg[operand_a] # gets value from operand_a current register
+        self.ram_write(value, self.SP) # writes to above value to the stack pointer address
+        
+        return (2, True)
 
     def cmp_func(self, operand_a, operand_b):
         pass

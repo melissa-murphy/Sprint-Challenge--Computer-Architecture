@@ -158,22 +158,22 @@ class CPU:
 
         # handle ls8 operations
         self.cmd_op = {
-            # 0b10101000: self.and_func,
-            0b10100111: self.cmp_func,
-            0b00000001: self.hlt,
-            0b01010101: self.jeq,
-            0b01010100: self.jmp,
-            0b01010110: self.jne,
-            0b10000010: self.ldi,
-            0b10100010: self.mul,
-            # 0b01101001: self.not_func,
-            # 0b10101010: self.or_func,
-            0b01000110: self.pop,
-            0b01000111: self.prn,
-            0b01000101: self.push,
-            # 0b10101100: self.shl,
-            # 0b10101101: self.shr,
-            # 0b10101011: self.xor,
+            # 0b10101000: self.and_func, # 168
+            0b10100111: self.cmp_func, # 167
+            0b00000001: self.hlt, # 1
+            0b01010101: self.jeq, # 85
+            0b01010100: self.jmp, # 84
+            0b01010110: self.jne, # 86
+            0b10000010: self.ldi, # 130
+            0b10100010: self.mul, # 162
+            # 0b01101001: self.not_func, # 105
+            # 0b10101010: self.or_func, # 170
+            0b01000110: self.pop, # 70
+            0b01000111: self.prn, # 71
+            0b01000101: self.push, # 69
+            # 0b10101100: self.shl, # 172
+            # 0b10101101: self.shr, # 173
+            # 0b10101011: self.xor, # 171
         }
 
     def __repr__(self):
@@ -185,14 +185,16 @@ class CPU:
     def ram_write(self, address, value):
         self.ram[address] = value
 
-    def htl(self, operand_a, operand_b):
+    def hlt(self, operand_a, operand_b): # halt program and exit
         return (0, False)
 
-    def ldi(self, operand_a, operand_b):
-        pass
+    def ldi(self, operand_a, operand_b): # assign value to register
+        self.reg[operand_a] = operand_b
+        return (3, True)
 
-    def prn(self, operand_a, operand_b):
-        pass
+    def prn(self, operand_a, operand_b): # print value in current register
+        print(self.reg[operand_a])
+        return (2, True)
 
     def mul(self, operand_a, operand_b):
         pass
@@ -265,7 +267,13 @@ class CPU:
         # elif op == "SUB": etc
         elif op == "MUL":
             self.reg[reg_a] = (self.reg[reg_a]) * (self.reg[reg_b])
-        
+        elif op == "CMP":
+            if self.reg[reg_a] > self.reg[reg_b]:
+                self.FL = 0b00000010 # 2
+            elif self.reg[reg_a] < self.reg[reg_b]:
+                self.FL = 0b00000100 # 4
+            elif self.reg[reg_a] == self.reg[reg_b]:
+                self.FL = 0b00000001 # 1
         else:
             raise Exception("Unsupported ALU operation")
 

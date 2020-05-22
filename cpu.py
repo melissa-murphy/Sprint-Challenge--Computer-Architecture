@@ -301,7 +301,7 @@ class CPU:
             operand_b = self.ram_read(self.PC+2)
 
             try:
-                op_output: self.commands[IR](operand_a, operand_b)
+                op_output: self.cmd_op[IR](operand_a, operand_b)
 
                 running = op_output[1]
                 self.PC += op_output[0]

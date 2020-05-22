@@ -159,18 +159,18 @@ class CPU:
         # handle ls8 operations
         self.cmd_op = {
             # 0b10101000: self.and_func, # 168
-            0b10100111: self.cmp_func, # 167
-            0b00000001: self.hlt, # 1
-            0b01010101: self.jeq, # 85
-            0b01010100: self.jmp, # 84
-            0b01010110: self.jne, # 86
-            0b10000010: self.ldi, # 130
-            0b10100010: self.mul, # 162
+            0b10100111: self.cmp_func,  # 167
+            0b00000001: self.hlt,  # 1
+            # 0b01010101: self.jeq,  # 85
+            # 0b01010100: self.jmp,  # 84
+            # 0b01010110: self.jne,  # 86
+            0b10000010: self.ldi,  # 130
+            0b10100010: self.mul,  # 162
             # 0b01101001: self.not_func, # 105
             # 0b10101010: self.or_func, # 170
-            0b01000110: self.pop, # 70
-            0b01000111: self.prn, # 71
-            0b01000101: self.push, # 69
+            0b01000110: self.pop,  # 70
+            0b01000111: self.prn,  # 71
+            0b01000101: self.push,  # 69
             # 0b10101100: self.shl, # 172
             # 0b10101101: self.shr, # 173
             # 0b10101011: self.xor, # 171
@@ -185,33 +185,37 @@ class CPU:
     def ram_write(self, address, value):
         self.ram[address] = value
 
-    def hlt(self, operand_a, operand_b): # halt program and exit
+    def hlt(self, operand_a, operand_b):  # halt program and exit
         return (0, False)
 
-    def ldi(self, operand_a, operand_b): # assign value to register
+    def ldi(self, operand_a, operand_b):  # assign value to register
         self.reg[operand_a] = operand_b
         return (3, True)
 
-    def prn(self, operand_a, operand_b): # print value in current register
+    def prn(self, operand_a, operand_b):  # print value in current register
         print(self.reg[operand_a])
         return (2, True)
 
-    def mul(self, operand_a, operand_b): # multiply values from both registers and store in first register
+    # multiply values from both registers and store in first register
+    def mul(self, operand_a, operand_b):
         self.alu("MUL", operand_a, operand_b)
         return (3, True)
 
     def pop(self, operand_a, operand_b):
-        value = self.ram_read(self.SP) # read starting point from stack pointer variable
-        self.reg[operand_a] = value # write to indicated register
-        self.SP += 1 # increment stack pointer to next occupied memory in the stack
-        
+        # read starting point from stack pointer variable
+        value = self.ram_read(self.SP)
+        self.reg[operand_a] = value  # write to indicated register
+        self.SP += 1  # increment stack pointer to next occupied memory in the stack
+
         return (2, True)
 
     def push(self, operand_a, operand_b):
-        self.SP -= 1 # decrement stack point and return open spot in memory
-        value = self.reg[operand_a] # gets value from operand_a current register
-        self.ram_write(value, self.SP) # writes to above value to the stack pointer address
-        
+        self.SP -= 1  # decrement stack point and return open spot in memory
+        # gets value from operand_a current register
+        value = self.reg[operand_a]
+        # writes to above value to the stack pointer address
+        self.ram_write(value, self.SP)
+
         return (2, True)
 
     def cmp_func(self, operand_a, operand_b):
@@ -237,8 +241,8 @@ class CPU:
                 for line in f:
                     # find and ignore anything following #
                     comment_split = line.split('#')
-                    # convert binary to int
-                    number = comment_split[0].strip()
+                    number = comment_split[0].strip()  # convert binary to int
+
                     if number == "":
                         continue
 
@@ -252,6 +256,10 @@ class CPU:
             print(f"{program} not found")
             sys.exit(2)
 
+        if len(sys.argv) != 2:
+            print(
+                f"please format the command line: \n python3 ls8.py <filename>", file=sys.stderr)
+            sys.exit(1)
         # For now, we've just hardcoded a program:
 
         # program = [
@@ -278,11 +286,11 @@ class CPU:
             self.reg[reg_a] = (self.reg[reg_a]) * (self.reg[reg_b])
         elif op == "CMP":
             if self.reg[reg_a] > self.reg[reg_b]:
-                self.FL = 0b00000010 # 2
+                self.FL = 0b00000010  # 2
             elif self.reg[reg_a] < self.reg[reg_b]:
-                self.FL = 0b00000100 # 4
+                self.FL = 0b00000100  # 4
             elif self.reg[reg_a] == self.reg[reg_b]:
-                self.FL = 0b00000001 # 1
+                self.FL = 0b00000001  # 1
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -314,8 +322,8 @@ class CPU:
         while running:
             IR = self.ram[self.PC]
 
-            operand_a = self.ram_read(self.PC+1)
-            operand_b = self.ram_read(self.PC+2)
+            operand_a = self.ram_read(self.PC + 1)
+            operand_b = self.ram_read(self.PC + 2)
 
             try:
                 op_output: self.cmd_op[IR](operand_a, operand_b)

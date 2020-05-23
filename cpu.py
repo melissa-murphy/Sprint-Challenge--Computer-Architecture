@@ -1,128 +1,3 @@
-# """CPU functionality."""
-
-# import sys
-
-
-# class CPU:
-#     """Main CPU class."""
-
-#     def __init__(self):
-#         """Construct a new CPU."""
-#         self.pc = 0
-#         self.reg = [0] * 8
-#         self.ram = [0] * 256
-#         self.stack_pointer = 0xF4 # binary = 11110100, decimal = 244
-
-#     def ram_read(self, address):
-#         return self.ram[address]
-
-#     def ram_write(self, address, value):
-#         self.ram[address] = value
-
-#     def load(self):
-#         """Load a program into memory."""
-
-#         address = 0
-#         program = sys.argv[1]
-
-#         try:
-#             with open(program) as f:
-#                 count = 0
-#                 for line in f:
-#                     count += 1
-#                 # find and ignore anything following #
-#                 comment_split = line.split('#')
-
-#                 # convert binary to int
-#                 number = comment_split[0].strip()
-#                 try:
-#                     x = int(number, 2)
-#                 except ValueError:
-#                     print('ValueError')
-
-#                 self.ram[address] = x
-#                 address += 1
-
-#         except FileNotFoundError:
-#             print(f"{sys.argv[0]}: {sys.argv[1]} not found")
-#             sys.exit(2)
-
-#         # For now, we've just hardcoded a program:
-
-#         # program = [
-#         #     # From print8.ls8
-#         #     0b10000010,  # LDI R0,8
-#         #     0b00000000,
-#         #     0b00001000,
-#         #     0b01000111,  # PRN R0
-#         #     0b00000000,
-#         #     0b00000001,  # HLT
-#         # ]
-
-#         # for instruction in program:
-#         #     self.ram[address] = instruction
-#         #     address += 1
-
-#     def alu(self, op, reg_a, reg_b):
-#         """ALU operations."""
-
-#         if op == "ADD":
-#             self.reg[reg_a] += self.reg[reg_b]
-#         # elif op == "SUB": etc
-#         else:
-#             raise Exception("Unsupported ALU operation")
-
-#     def trace(self):
-#         """
-#         Handy function to print out the CPU state. You might want to call this
-#         from run() if you need help debugging.
-#         """
-
-#         print(f"TRACE: %02X | %02X %02X %02X |" % (
-#             self.pc,
-#             # self.fl,
-#             # self.ie,
-#             self.ram_read(self.pc),
-#             self.ram_read(self.pc + 1),
-#             self.ram_read(self.pc + 2)
-#         ), end='')
-
-#         for i in range(8):
-#             print(" %02X" % self.reg[i], end='')
-
-#         print()
-
-#     def run(self):
-#         """Run the CPU."""
-#         running = True
-#         while running is True:
-#             # instruction register
-#             IR = self.ram_read(self.pc)
-#             # read bytes from RAM, convert to variables
-#             operand_a = self.ram_read(self.pc+1)
-#             operand_b = self.ram_read(self.pc+2)
-#             # self.trace()
-
-#             # elif cascade LS8 specs
-#             # HLT: stop program and exit emulator
-#             if IR == 0b00000001:  # = 1
-#                 running = False
-
-#             # LDI: set value of register to an integer
-#             if IR == 0b10000010:  # = 130
-#                 self.reg[operand_a] = operand_b
-#                 self.pc += 3
-
-#             # PRN: print value stored in specified register
-#             if IR == 0b01000111:  # = 71
-#                 print(self.reg[operand_a])
-#                 self.pc += 2
-
-#             # MUL: multiply value is 2 registers and store product in regA
-#             if IR == 0b10100010:  # = 162
-#                 self.reg[operand_a] = self.reg[operand_a] * self.reg[operand_b]
-#                 self.pc += 3
-
 """CPU functionality."""
 
 import sys
@@ -161,9 +36,9 @@ class CPU:
             # 0b10101000: self.and_func, # 168
             0b10100111: self.cmp_func,  # 167
             0b00000001: self.hlt,  # 1
-            # 0b01010101: self.jeq,  # 85
-            # 0b01010100: self.jmp,  # 84
-            # 0b01010110: self.jne,  # 86
+            0b01010101: self.jeq,  # 85
+            0b01010100: self.jmp,  # 84
+            0b01010110: self.jne,  # 86
             0b10000010: self.ldi,  # 130
             0b10100010: self.mul,  # 162
             # 0b01101001: self.not_func, # 105
@@ -219,16 +94,24 @@ class CPU:
         return (2, True)
 
     def cmp_func(self, operand_a, operand_b):
-        pass
+        self.alu("CMP", operand_a, operand_b)
+        return (3, True)
 
     def jmp(self, operand_a, operand_b):
-        pass
+        self.PC = self.reg[operand_a] # retrieve address from reg and set to PC
+        return (0, True)
 
     def jeq(self, operand_a, operand_b):
-        pass
+        if self.FL == 0b00000001: # if flag is True (1) set pc to address retreived from reg
+            self.PC = self.reg[operand_a]
+            return (0, True)
+        return (2, True)
 
     def jne(self, operand_a, operand_b):
-        pass
+        if self.FL != 0b00000001: # if flag is False (0) set pc to address retreived from reg
+            self.PC = self.reg[operand_a]
+            return (0, True)
+        return (2, True)
 
     def load(self, program):
         """Load a program into memory."""
@@ -260,21 +143,6 @@ class CPU:
             print(
                 f"please format the command line: \n python3 ls8.py <filename>", file=sys.stderr)
             sys.exit(1)
-        # For now, we've just hardcoded a program:
-
-        # program = [
-        #     # From print8.ls8
-        #     0b10000010,  # LDI R0,8
-        #     0b00000000,
-        #     0b00001000,
-        #     0b01000111,  # PRN R0
-        #     0b00000000,
-        #     0b00000001,  # HLT
-        # ]
-
-        # for instruction in program:
-        #     self.ram[address] = instruction
-        #     address += 1
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -324,7 +192,8 @@ class CPU:
 
             operand_a = self.ram_read(self.PC + 1)
             operand_b = self.ram_read(self.PC + 2)
-
+            self.trace()
+            
             try:
                 op_output: self.cmd_op[IR](operand_a, operand_b)
 
@@ -334,31 +203,3 @@ class CPU:
             except:
                 print(f"Unknown Command: {IR}")
                 sys.exit(1)
-
-        # while running is True:
-        #     # instruction register
-        #     IR = self.ram_read(self.PC)
-        #     # read bytes from RAM, convert to variables
-        #     operand_a = self.ram_read(self.PC+1)
-        #     operand_b = self.ram_read(self.PC+2)
-        #     # self.trace()
-
-        #     # elif cascade LS8 specs
-        #     # HLT: stop program and exit emulator
-        #     if IR == 0b00000001:  # = 1
-        #         running = False
-
-        #     # LDI: set value of register to an integer
-        #     if IR == 0b10000010:  # = 130
-        #         self.reg[operand_a] = operand_b
-        #         self.PC += 3
-
-        #     # PRN: print value stored in specified register
-        #     if IR == 0b01000111:  # = 71
-        #         print(self.reg[operand_a])
-        #         self.PC += 2
-
-        #     # MUL: multiply value is 2 registers and store product in regA
-        #     if IR == 0b10100010:  # = 162
-        #         self.reg[operand_a] = self.reg[operand_a] * self.reg[operand_b]
-        #         self.PC += 3

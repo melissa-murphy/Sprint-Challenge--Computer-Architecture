@@ -98,17 +98,20 @@ class CPU:
         return (3, True)
 
     def jmp(self, operand_a, operand_b):
-        self.PC = self.reg[operand_a] # retrieve address from reg and set to PC
+        # retrieve address from reg and set to PC
+        self.PC = self.reg[operand_a]
         return (0, True)
 
     def jeq(self, operand_a, operand_b):
-        if self.FL == 0b00000001: # if flag is True (1) set pc to address retreived from reg
+        # if flag is True (1) set pc to address retreived from reg
+        if self.FL == 0b00000001:
             self.PC = self.reg[operand_a]
             return (0, True)
         return (2, True)
 
     def jne(self, operand_a, operand_b):
-        if self.FL != 0b00000001: # if flag is False (0) set pc to address retreived from reg
+        # if flag is False (0) set pc to address retreived from reg
+        if self.FL != 0b00000001:
             self.PC = self.reg[operand_a]
             return (0, True)
         return (2, True)
@@ -116,11 +119,12 @@ class CPU:
     def load(self, program):
         """Load a program into memory."""
         print("loading....")
-
+        program = sys.argv[1]
+        address = 0
         try:
-            address = 0
-
+            count = 0
             with open(program) as f:
+                count += 1
                 for line in f:
                     # find and ignore anything following #
                     comment_split = line.split('#')
@@ -193,7 +197,7 @@ class CPU:
             operand_a = self.ram_read(self.PC + 1)
             operand_b = self.ram_read(self.PC + 2)
             self.trace()
-            
+
             try:
                 op_output: self.cmd_op[IR](operand_a, operand_b)
 

@@ -27,13 +27,12 @@ class CPU:
         """Construct a new CPU."""
         self.reg = [0] * 8
         self.ram = [0] * 256
-        self.PC = self.reg[0]  # program counter stored
-        self.SP = self.reg[7]  # stack pointer stored
-        self.FL = self.reg[4]  # flag stored
+        self.PC = 0  # starting program counter
+        self.SP = 0xF4  # starting pointer stored
+        self.FL = 0b00000000  # starting flag
 
         # handle ls8 operations
         self.cmd_op = {
-            # 0b10101000: self.and_func, # 168
             0b10100111: self.cmp_func,  # 167
             0b00000001: self.hlt,  # 1
             0b01010101: self.jeq,  # 85
@@ -41,18 +40,10 @@ class CPU:
             0b01010110: self.jne,  # 86
             0b10000010: self.ldi,  # 130
             0b10100010: self.mul,  # 162
-            # 0b01101001: self.not_func, # 105
-            # 0b10101010: self.or_func, # 170
             0b01000110: self.pop,  # 70
             0b01000111: self.prn,  # 71
-            0b01000101: self.push,  # 69
-            # 0b10101100: self.shl, # 172
-            # 0b10101101: self.shr, # 173
-            # 0b10101011: self.xor, # 171
+            0b01000101: self.push  # 69
         }
-
-    def __repr__(self):
-        return F"RAM: {self.ram} \n Register: {self.reg}"
 
     def ram_read(self, address):
         return self.ram[address]
@@ -116,37 +107,33 @@ class CPU:
             return (0, True)
         return (2, True)
 
-    def load(self, program):
+    def load(self):
         """Load a program into memory."""
-        print("loading....")
+        # print("loading....")
         program = sys.argv[1]
         address = 0
+
         try:
-            count = 0
             with open(program) as f:
-                count += 1
+                count = 0
                 for line in f:
+                    count += 1
                     # find and ignore anything following #
                     comment_split = line.split('#')
                     number = comment_split[0].strip()  # convert binary to int
 
-                    if number == "":
+                    try:
+                        x = int(number, 2)
+                    except ValueError:
                         continue
 
-                    value = int(number, 2)
-
-                    self.ram_write(value, address)
+                    self.ram[address] = x
 
                     address += 1
 
         except FileNotFoundError:
-            print(f"{program} not found")
+            print(f"{sys.argv[0]}: {program} not found.")
             sys.exit(2)
-
-        if len(sys.argv) != 2:
-            print(
-                f"please format the command line: \n python3 ls8.py <filename>", file=sys.stderr)
-            sys.exit(1)
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -191,7 +178,7 @@ class CPU:
         running = True
         # refactored to use pointer and operandi
 
-        while running:
+        while running is True:
             IR = self.ram[self.PC]
 
             operand_a = self.ram_read(self.PC + 1)

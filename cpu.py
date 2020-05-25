@@ -51,28 +51,41 @@ class CPU:
 
     def alu(self, op, reg_a, reg_b=None):
         """ALU operations."""
+        return {
+            'ADD': lambda: self.reg[reg_a] + self.reg[reg_b],
+            'SUB': lambda: self.reg[reg_a] - self.reg[reg_b],
+            'MUL': lambda: self.reg[reg_a] * self.reg[reg_b],
+            'MOD': lambda: self.reg[reg_a] % self.reg[reg_b],
+            'AND': lambda: self.reg[reg_a] & self.reg[reg_b],
+            'OR': lambda: self.reg[reg_a] | self.reg[reg_b],
+            'XOR': lambda: self.reg[reg_a] ^ self.reg[reg_b],
+            'NOT': lambda: ~self.reg[reg_b],
+            'SHL': lambda: self.reg[reg_a] << self.reg[reg_b],
+            'SHR': lambda: self.reg[reg_a] >> self.reg[reg_b],
 
-        if op == "ADD":
-            self.reg[reg_a] += self.reg[reg_b]
-        elif op == "MUL":
-            self.reg[reg_a] = self.reg[reg_a] * self.reg[reg_b]
-        elif op == "MOD":
-            self.reg[reg_a] = self.reg[reg_a] % self.reg[reg_b]
-        elif op == "AND":
-            self.reg[reg_a] = self.reg[reg_a] & self.reg[reg_b]
-        elif op == "OR":
-            self.reg[reg_a] = self.reg[reg_a] | self.reg[reg_b]
-        elif op == "XOR":
-            self.reg[reg_a] = self.reg[reg_a] ^ self.reg[reg_b]
-        elif op == "NOT":
-            self.reg[reg_a] = ~self.reg[reg_a]
-        elif op == "SHL":
-            self.reg[reg_a] = self.reg[reg_a] << self.reg[reg_b]
-        elif op == "SHR":
-            self.reg[reg_a] = self.reg[reg_a] >> self.reg[reg_b]
+        }.get(op, lambda: 'Not a valid operation')()
 
-        else:
-            raise Exception("Unsupported ALU operation")
+        # if op == "ADD":
+        #     self.reg[reg_a] += self.reg[reg_b]
+        # elif op == "MUL":
+        #     self.reg[reg_a] = self.reg[reg_a] * self.reg[reg_b]
+        # elif op == "MOD":
+        #     self.reg[reg_a] = self.reg[reg_a] % self.reg[reg_b]
+        # elif op == "AND":
+        #     self.reg[reg_a] = self.reg[reg_a] & self.reg[reg_b]
+        # elif op == "OR":
+        #     self.reg[reg_a] = self.reg[reg_a] | self.reg[reg_b]
+        # elif op == "XOR":
+        #     self.reg[reg_a] = self.reg[reg_a] ^ self.reg[reg_b]
+        # elif op == "NOT":
+        #     self.reg[reg_a] = ~self.reg[reg_a]
+        # elif op == "SHL":
+        #     self.reg[reg_a] = self.reg[reg_a] << self.reg[reg_b]
+        # elif op == "SHR":
+        #     self.reg[reg_a] = self.reg[reg_a] >> self.reg[reg_b]
+
+        # else:
+        #     raise Exception("Unsupported ALU operation")
 
     def trace(self):
         """
